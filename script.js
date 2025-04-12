@@ -1,13 +1,15 @@
 // Inicializa o banco de dados
-const request = indexedDB.open("FuncionariosDB", 1);
+const request = indexedDB.open("FuncionariosDB", 1);//abertura(open) da versao 1 do banco dados funcionáriosDB do indexedDB 
 
-request.onupgradeneeded = function (event) {
-    let db = event.target.result;
-    let store = db.createObjectStore("funcionarios", { keyPath: "id", autoIncrement: true });
-
+request.onupgradeneeded = function (event) { //onupgradeneeded - envento de atualizao, serve para atualizar versões
+    let db = event.target.result; // retorna o objeto IDBDatabase do banco de dados que está sendo criado ou atualizado.
+    let store = db.createObjectStore("funcionarios", { keyPath: "id", autoIncrement: true }); //cria um espaço onde os dados são armazenados.
+    //store.createIndex() cria um índice no object store. Índices são usados para otimizar a pesquisa de registros.
     store.createIndex("nome", "nome", { unique: false });
     store.createIndex("cpf", "cpf", { unique: true });
     store.createIndex("email", "email", { unique: true });
+    store.createIndex("telefone","telefone",{unique:true});
+    store.createIndex("cargo","cargo",{unique:false});
 };
 
 request.onsuccess = function (event) {
