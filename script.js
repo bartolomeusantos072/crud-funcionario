@@ -12,18 +12,19 @@ request.onupgradeneeded = function (event) { //onupgradeneeded - envento de atua
     store.createIndex("cargo","cargo",{unique:false});
 };
 
-request.onsuccess = function (event) {
+
+request.onsuccess = function (event) { // evento que é executado quando a operação foi concluída com sucesso
     console.log("Banco de dados carregado com sucesso!");
     listarFuncionarios(); // Garante que os dados sejam carregados ao iniciar
 };
 
-request.onerror = function (event) {
+request.onerror = function (event) { // evento que é executado quando houve erro na operação 
     console.error("Erro ao abrir o IndexedDB:", event.target.error);
 };
 
 // Função auxiliar para verificar se o banco de dados foi carregado corretamente
 function verificarDB() {
-    if (!request.result) {
+    if (!request.result) {  //verifica se o banco esta disponivel caso não esteja retorna null
         console.error("O banco de dados não foi carregado corretamente.");
         return null;
     }
@@ -33,7 +34,7 @@ function verificarDB() {
 // Captura o evento de envio do formulário
 document.querySelector(".add_names").addEventListener("submit", function (event) {
     event.preventDefault();
-    let funcionario = {
+    let funcionario = { // criando o objeto funcionario, as palavras seguidas de dois pontos são atributos
         nome: document.getElementById("nome").value,
         cpf: document.getElementById("cpf").value,
         email: document.getElementById("email").value,
@@ -44,6 +45,8 @@ document.querySelector(".add_names").addEventListener("submit", function (event)
 
     adicionarFuncionario(funcionario);
 });
+
+
 // Função para listar funcionários com feedback visual
 function listarFuncionarios() {
     let db = verificarDB();
