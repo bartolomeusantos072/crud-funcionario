@@ -34,7 +34,11 @@ function verificarDB() {
 // Captura o evento de envio do formulário
 document.querySelector(".add_names").addEventListener("submit", function (event) {
     event.preventDefault();
-    let funcionario = { // criando o objeto funcionario, as palavras seguidas de dois pontos são atributos
+
+    const form = event.target;
+    const editId = form.getAttribute("data-edit-id");
+
+    let funcionario = {
         nome: document.getElementById("nome").value,
         cpf: document.getElementById("cpf").value,
         email: document.getElementById("email").value,
@@ -43,8 +47,17 @@ document.querySelector(".add_names").addEventListener("submit", function (event)
         cargo: document.getElementById("cargo").value
     };
 
-    adicionarFuncionario(funcionario);
+    if (editId) {
+        atualizarFuncionario(Number(editId), funcionario);
+        form.removeAttribute("data-edit-id");
+        form.querySelector("button").textContent = "Adicionar";
+    } else {
+        adicionarFuncionario(funcionario);
+    }
+
+    form.reset(); // limpa o formulário depois
 });
+
 
 
 // Função para listar funcionários com feedback visual
@@ -67,7 +80,9 @@ function listarFuncionarios() {
         let cursor = event.target.result; //o curso aponta para cada registro
         if (cursor) { //se o registro existir
             let funcionario = cursor.value; // o curso busca as informações do funcionario
-            listaFuncionarios.innerHTML += `<p>ID: ${funcionario.id} - Nome: ${funcionario.nome} - CPF: ${funcionario.cpf} </p>`;
+            listaFuncionarios.innerHTML += `<p>ID: ${funcionario.id} - Nome: ${funcionario.nome} - CPF: ${funcionario.cpf} </p>
+            <button class="editar" data-id="${funcionario.id}">Editar</button>
+            <button class="excluir" data-id="${funcionario.id}">Excluir</button>`;
             cursor.continue();
         } else {
             mostrarFeedback("Lista de funcionários carregada com sucesso!", "success");
@@ -172,7 +187,43 @@ function mostrarFeedback(mensagem, tipo) {
     }, 3000);
 }
 
+document.addEventListener("click", function (e) {
+    if (e.target.classList.contains("excluir")) {
+        const id = Number(e.target.dataset.id);
+        deletarFuncionario(id);
+    }
 
+    if (e.target.classList.contains("editar")) {
+        const id = Number(e.target.dataset.id);
+        preencherFormularioParaEdicao(id);
+    }
+});
+
+
+function preencherFormularioParaEdicao(id) {
+    let db = verificarDB();
+    if (!db) return;
+
+    let transaction = db.transaction("funcionarios", "readonly");
+    let store = transaction.objectStore("funcionarios");
+    let getRequest = store.get(id);
+
+    getRequest.onsuccess = function () {
+        let funcionario = getRequest.result;
+        if (funcionario) {
+            document.getElementById("nome").value = funcionario.nome;
+            document.getElementById("cpf").value = funcionario.cpf;
+            document.getElementById("email").value = funcionario.email;
+            document.getElementById("telefone").value = funcionario.telefone;
+            document.getElementById("data_nascimento").value = funcionario.data_nascimento;
+            document.getElementById("cargo").value = funcionario.cargo;
+
+            // Salva o ID em um atributo do form para indicar que é uma edição
+            document.querySelector(".add_names").setAttribute("data-edit-id", funcionario.id);
+            document.querySelector(".add_names button").textContent = "Salvar Alterações";
+        }
+    };
+}
 
 // Chamada inicial para listar funcionários ao carregar a página
 window.onload = listarFuncionarios;
